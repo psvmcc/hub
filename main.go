@@ -107,7 +107,7 @@ func startServer(c *cli.Context) error {
 			req := c.Request()
 			res := c.Response()
 			if strings.HasPrefix(req.RequestURI, "/ping") {
-				return
+				return err
 			}
 			start := time.Now()
 			if err = next(c); err != nil {
@@ -135,7 +135,7 @@ func startServer(c *cli.Context) error {
 				logger.Named("req").Error(message)
 			}
 
-			return
+			return err
 		}
 	})
 
