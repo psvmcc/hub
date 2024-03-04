@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/psvmcc/hub/pkg/handlers"
@@ -105,6 +106,9 @@ func startServer(c *cli.Context) error {
 		return func(c echo.Context) (err error) {
 			req := c.Request()
 			res := c.Response()
+			if strings.HasPrefix(req.RequestURI, "/ping") {
+				return
+			}
 			start := time.Now()
 			if err = next(c); err != nil {
 				c.Error(err)

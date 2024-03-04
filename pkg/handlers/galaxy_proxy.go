@@ -22,7 +22,7 @@ func GalaxyProxyCollection(key string) echo.HandlerFunc {
 		namespace := c.Param("namespace")
 		name := c.Param("name")
 		url := fmt.Sprintf("%s/api/v3/collections/%s/%s/", cfg.Server.Galaxy[key].URL, namespace, name)
-		dest := fmt.Sprintf("%s/galaxy/%s/%s/%s/index.json", cfg.Dir, key, namespace, name)
+		dest := fmt.Sprintf("%s/galaxy/%s/index/%s/%s/index.json", cfg.Dir, key, namespace, name)
 
 		headers := types.RequestHeaders{
 			"UserAgent": "ansible-galaxy",
@@ -59,7 +59,7 @@ func GalaxyProxyCollectionVersions(key string) echo.HandlerFunc {
 		namespace := c.Param("namespace")
 		name := c.Param("name")
 		url := fmt.Sprintf("%s/api/v3/collections/%s/%s/versions/?%s", cfg.Server.Galaxy[key].URL, namespace, name, c.QueryString())
-		dest := fmt.Sprintf("%s/galaxy/%s/%s/%s/versions/index/%s", cfg.Dir, key, namespace, name, c.QueryString())
+		dest := fmt.Sprintf("%s/galaxy/%s/index/%s/%s/versions/index/%s", cfg.Dir, key, namespace, name, c.QueryString())
 
 		headers := types.RequestHeaders{
 			"UserAgent": "ansible-galaxy",
@@ -94,7 +94,7 @@ func GalaxyProxyCollectionVersionInfo(key string) echo.HandlerFunc {
 		name := c.Param("name")
 		version := c.Param("version")
 		url := fmt.Sprintf("%s/api/v3/collections/%s/%s/versions/%s", cfg.Server.Galaxy[key].URL, namespace, name, version)
-		dest := fmt.Sprintf("%s/galaxy/%s/%s/%s/versions/%s/index.json", cfg.Dir, key, namespace, name, version)
+		dest := fmt.Sprintf("%s/galaxy/%s/index/%s/%s/versions/%s/index.json", cfg.Dir, key, namespace, name, version)
 
 		scheme := c.Scheme()
 		host := c.Request().Host
@@ -134,7 +134,7 @@ func GalaxyProxyCollectionGet(key string) echo.HandlerFunc {
 		namespace := c.Param("namespace")
 		name := c.Param("name")
 		version := strings.TrimRight(c.Param("version"), "/")
-		versionFile := fmt.Sprintf("%s/galaxy/%s/%s/%s/versions/%s/index.json", cfg.Dir, key, namespace, name, version)
+		versionFile := fmt.Sprintf("%s/galaxy/%s/index/%s/%s/versions/%s/index.json", cfg.Dir, key, namespace, name, version)
 		var CollectionVersionInfo types.GalaxyCollectionVersionInfo
 		err := CollectionVersionInfo.ReadFromJSONFile(versionFile)
 		if err != nil {
