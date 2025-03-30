@@ -29,7 +29,7 @@ jobs:
           images: ghcr.io/psvmcc/hub
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -37,9 +37,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: run goreleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
+          version: v2
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
