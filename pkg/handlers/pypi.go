@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/psvmcc/hub/pkg/misc"
 	"github.com/psvmcc/hub/pkg/types"
@@ -72,8 +73,30 @@ func PypiPackages(key string) echo.HandlerFunc {
 			"UserAgent": "pypi",
 		}
 
+		indexFileInfo, err := os.Stat(indexDest)
+		if err == nil {
+			modTime := indexFileInfo.ModTime()
+			oneHourAgo := time.Now().Add(-1 * time.Hour)
+
+			if modTime.Before(oneHourAgo) {
+				logger.Named(loggerNS).Debugf("Index file older than 1 hour: %s", indexDest)
+
+				url = fmt.Sprintf("%s/%s/", cfg.Server.PYPI[key], name)
+
+				headers = types.RequestHeaders{
+					"UserAgent": "pypi",
+					"Accept":    "application/vnd.pypi.simple.v1+json",
+				}
+				_, err := misc.DownloadFile(url, indexDest, headers)
+				if err != nil {
+					logger.Named(loggerNS).Errorf("[Downloading] %s", err)
+				}
+				logger.Named(loggerNS).Debugf("Remote %s saved as %s", url, indexDest)
+			}
+		}
+
 		var pypiMetadata types.PypiMetadata
-		err := pypiMetadata.ReadFromJSONFile(indexDest)
+		err = pypiMetadata.ReadFromJSONFile(indexDest)
 		if err != nil {
 			logger.Named(loggerNS).Debugf("Parse local json file %s, got error: %s", indexDest, err)
 
