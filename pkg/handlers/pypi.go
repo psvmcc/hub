@@ -45,7 +45,6 @@ func PypiSimple(key string) echo.HandlerFunc {
 			logger.Named(loggerNS).Debugf("Remote %s saved as %s", url, dest)
 		}
 
-		c.Response().Header().Add("Content-Type", "text/html")
 		var pypiMetadata types.PypiMetadata
 		err = pypiMetadata.ReadFromJSONFile(dest)
 		if err != nil {
@@ -55,6 +54,13 @@ func PypiSimple(key string) echo.HandlerFunc {
 		for i := range pypiMetadata.Files {
 			pypiMetadata.Files[i].URL = fmt.Sprintf("%s://%s/pypi/%s/packages/%s/%s", scheme, host, key, name, pypiMetadata.Files[i].Filename)
 		}
+
+		if c.Request().Header.Get(echo.HeaderAccept) == "application/vnd.pypi.simple.v1+json" {
+			c.Response().Header().Add("Content-Type", "application/vnd.pypi.simple.v1+json")
+			return c.JSON(http.StatusOK, pypiMetadata)
+		}
+
+		c.Response().Header().Add("Content-Type", "text/html")
 		return c.Render(http.StatusOK, "pypi", pypiMetadata)
 	}
 }
