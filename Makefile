@@ -32,4 +32,4 @@ container:
 	podman build -t psvmcc/hub .
 
 run:
-	go run main.go s
+	go run -mod=vendor main.go s --verbose
