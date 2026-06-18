@@ -86,6 +86,7 @@ func PypiPackages(key string) echo.HandlerFunc {
 			modTime := indexFileInfo.ModTime()
 			oneHourAgo := time.Now().Add(-1 * time.Hour)
 
+			logger.Debugf("modTime=%s now=%s age=%s", modTime, time.Now(), time.Since(modTime))
 			if modTime.Before(oneHourAgo) {
 				logger.Named(loggerNS).Debugf("Index file older than 1 hour: %s", indexDest)
 
