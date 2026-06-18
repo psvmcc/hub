@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -63,6 +64,12 @@ func main() {
 					Value:   "config.yaml",
 					EnvVars: []string{"HUB_CONFIG"},
 				},
+				&cli.StringFlag{
+					Name:    "real-ip-trust-range",
+					Usage:   "Real IP trust range",
+					Value:   "30.247.8.1/32",
+					EnvVars: []string{"HUB_REAL_IP_TRUST_RANGE"},
+				},
 			},
 			Action: startServer,
 		},
@@ -85,10 +92,12 @@ func startServer(c *cli.Context) error {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
+	_, trusted, _ := net.ParseCIDR(c.String("real-ip-trust-range"))
 	e.IPExtractor = echo.ExtractIPFromXFFHeader(
 		echo.TrustLoopback(true),
 		echo.TrustLinkLocal(false),
 		echo.TrustPrivateNet(false),
+		echo.TrustIPRange(trusted),
 	)
 
 	httpLogger := zap.S().Named("http")
