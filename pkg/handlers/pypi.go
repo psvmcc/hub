@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/psvmcc/hub/pkg/misc"
@@ -55,8 +56,8 @@ func PypiSimple(key string) echo.HandlerFunc {
 			pypiMetadata.Files[i].URL = fmt.Sprintf("%s://%s/pypi/%s/packages/%s/%s", scheme, host, key, name, pypiMetadata.Files[i].Filename)
 		}
 
-		if c.Request().Header.Get(echo.HeaderAccept) == "application/vnd.pypi.simple.v1+json" {
-			c.Response().Header().Add("Content-Type", "application/vnd.pypi.simple.v1+json")
+		if strings.Contains(c.Request().Header.Get(echo.HeaderAccept), "application/vnd.pypi.simple.v1+json") {
+			c.Response().Header().Set("Content-Type", "application/vnd.pypi.simple.v1+json")
 			return c.JSON(http.StatusOK, pypiMetadata)
 		}
 
@@ -86,7 +87,7 @@ func PypiPackages(key string) echo.HandlerFunc {
 			modTime := indexFileInfo.ModTime()
 			oneHourAgo := time.Now().Add(-1 * time.Hour)
 
-			logger.Debugf("modTime=%s now=%s age=%s", modTime, time.Now(), time.Since(modTime))
+			logger.Debugf("index=%s modTime=%s now=%s age=%s", indexDest, modTime, time.Now(), time.Since(modTime))
 			if modTime.Before(oneHourAgo) {
 				logger.Named(loggerNS).Debugf("Index file older than 1 hour: %s", indexDest)
 
@@ -134,6 +135,15 @@ func PypiPackages(key string) echo.HandlerFunc {
 			if pypiMetadata.Files[i].Filename == filename {
 				url = pypiMetadata.Files[i].URL
 				sha = pypiMetadata.Files[i].Hashes.Sha256
+				break
+			}
+			if fmt.Sprintf("%s.metadata", pypiMetadata.Files[i].Filename) == filename {
+				if meta, ok := pypiMetadata.Files[i].CoreMetadata.(map[string]any); ok {
+					if sha256, ok := meta["sha256"].(string); ok {
+						url = fmt.Sprintf("%s.metadata", pypiMetadata.Files[i].URL)
+						sha = sha256
+					}
+				}
 				break
 			}
 		}
