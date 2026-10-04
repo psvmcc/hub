@@ -35,6 +35,9 @@ func GalaxyLocalCollection(key string) echo.HandlerFunc {
 		if err != nil {
 			logger.Named(loggerNS).Errorf("Collection list error: %s", err)
 		}
+		if len(collectionLocal.Versions) == 0 {
+			return c.String(http.StatusNotFound, "No Collection found")
+		}
 
 		var collection types.GalaxyCollection
 		collection.Href = fmt.Sprintf("/api/v3/collections/%s/%s/", namespace, name)
@@ -67,6 +70,9 @@ func GalaxyLocalCollectionVersions(key string) echo.HandlerFunc {
 		err := collectionLocal.List(dest, namespace, name)
 		if err != nil {
 			logger.Named(loggerNS).Errorf("Collection list error: %s", err)
+		}
+		if len(collectionLocal.Versions) == 0 {
+			return c.String(http.StatusNotFound, "No Collection found")
 		}
 
 		var collectionVersions types.GalaxyCollectionVersions

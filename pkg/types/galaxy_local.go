@@ -1,10 +1,12 @@
 package types
 
 import (
+	"cmp"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -44,11 +46,30 @@ func (g *GalaxyLocal) List(dest, namespace, name string) error {
 		return fmt.Errorf("unable to parse directory %s, got error: %s", dest, err)
 	}
 
+	if len(g.Versions) == 0 {
+		return fmt.Errorf("no versions found in directory %s", dest)
+	}
+
 	g.Latest = g.Versions[0]
 	for _, v := range g.Versions {
-		if v.Time.After(g.Latest.Time) {
+		if compareVersions(v.Version, g.Latest.Version) > 0 {
 			g.Latest = v
 		}
 	}
 	return nil
+}
+
+// compareVersions compares two MAJOR.MINOR.PATCH versions numerically.
+func compareVersions(a, b string) int {
+	as, bs := strings.Split(a, "."), strings.Split(b, ".")
+	for i := range min(len(as), len(bs)) {
+		x, y := strings.TrimLeft(as[i], "0"), strings.TrimLeft(bs[i], "0")
+		if c := cmp.Compare(len(x), len(y)); c != 0 {
+			return c
+		}
+		if c := cmp.Compare(x, y); c != 0 {
+			return c
+		}
+	}
+	return cmp.Compare(len(as), len(bs))
 }
